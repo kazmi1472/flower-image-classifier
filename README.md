@@ -62,8 +62,8 @@ Drop the dataset under `data/flowers/<class>/*.jpg`. The folders should be `dais
 
 ```
 configs/default.yaml      # all knobs live here
-data/flowers/             # dataset (gitignored)
-models/                   # checkpoints + labels.json (gitignored)
+data/flowers/             # dataset (committed for reproducibility)
+models/                   # checkpoints + labels.json (committed)
 notebooks/flower_recognition.ipynb   # standalone Colab notebook
 reports/                  # evaluation outputs
 src/
@@ -94,8 +94,8 @@ Click **POST /predict → Try it out → Choose File** → pick any image from `
 
 **3. Or use the CLI**
 ```bash
-python -m src.predict samples/rose.jpg
-python -m src.predict samples/daisy.jpg --top-k 3
+python -m src.predict samples/flo1.jpg
+python -m src.predict samples/flo2.jpg --top-k 3
 ```
 
 ---
@@ -142,7 +142,7 @@ If your Drive folder is somewhere other than `MyDrive/data/flowers/`, edit `DRIV
 
 **Class imbalance.** Inverse-frequency class weights via Keras' `class_weight=`. Imbalance is mild so I didn't bother with oversampling — would just slow training without real gain.
 
-**Augmentation.** Horizontal flip, ±20° rotation, ±15% zoom/shift, mild brightness. Skipped vertical flip (unnatural orientation) and aggressive cutout (close-ups would lose the subject).
+**Augmentation.** Horizontal flip, ±15° rotation, ±10% zoom/shift, mild brightness. Skipped vertical flip (unnatural orientation) and aggressive cutout (close-ups would lose the subject).
 
 **Image size.** Tried 128/160/224. 160 was the best speed/accuracy tradeoff on CPU; 224 was 2× slower for ~1pp.
 
