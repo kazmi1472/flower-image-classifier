@@ -28,6 +28,7 @@ from sklearn.metrics import (
 
 from .config import load_config, resolve_path
 from .data import make_split, make_tf_dataset
+from .models import build_transfer_model
 from .utils import ensure_dir, get_logger, load_json, save_json, set_global_seed
 
 
@@ -103,9 +104,6 @@ def main() -> None:
     if not model_path.exists():
         raise FileNotFoundError(f"Model not found: {model_path}. Train a model first.")
 
-    logger.info("Loading model from %s", model_path)
-    model = tf.keras.models.load_model(model_path)
-
     # Use the same deterministic split as training.
     split = make_split(
         data_dir=resolve_path(cfg.data.data_dir),
@@ -116,6 +114,17 @@ def main() -> None:
     )
     classes = split.classes
     num_classes = len(classes)
+
+    # Rebuild the architecture in code and load just the weights.
+    # Avoids the Lambda(preprocess_input) deserialization mess entirely.
+    logger.info("Loading model weights from %s", model_path)
+    model, _ = build_transfer_model(
+        cfg.data.image_size, num_classes,
+        backbone=cfg.model.transfer_backbone,
+        dense_units=cfg.model.dense_units,
+        dropout=cfg.model.dropout,
+    )
+    model.load_weights(model_path)
 
     test_ds = make_tf_dataset(
         split.test_paths, split.test_labels,

@@ -47,18 +47,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _callbacks(cfg, monitor: str, ckpt_path: Path) -> list[tf.keras.callbacks.Callback]:
+def _callbacks(cfg, monitor: str, ckpt_path: Path, es_patience: int | None = None, rlr_patience: int | None = None) -> list[tf.keras.callbacks.Callback]:
     return [
         tf.keras.callbacks.EarlyStopping(
             monitor=monitor,
-            patience=cfg.training.early_stopping_patience,
+            patience=es_patience if es_patience is not None else cfg.training.early_stopping_patience,
             mode="max" if "acc" in monitor else "min",
             restore_best_weights=True,
             verbose=1,
         ),
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor=monitor,
-            patience=cfg.training.reduce_lr_patience,
+            patience=rlr_patience if rlr_patience is not None else cfg.training.reduce_lr_patience,
             factor=0.3,
             min_lr=1e-7,
             verbose=1,
@@ -80,7 +80,8 @@ def main() -> None:
     logger = get_logger("train", log_dir=resolve_path(cfg.paths.log_dir))
     set_global_seed(cfg.data.seed)
 
-    batch_size = args.batch_size or cfg.training.batch_size
+    gpus = tf.config.list_physical_devices('GPU')
+    batch_size = args.batch_size or (64 if gpus else cfg.training.batch_size)
     if args.quick:
         batch_size = min(batch_size, 16)
 
@@ -168,7 +169,9 @@ def main() -> None:
             validation_data=val_ds,
             epochs=head_epochs,
             class_weight=class_weights,
-            callbacks=_callbacks(cfg, "val_accuracy", ckpt_path),
+            callbacks=_callbacks(cfg, "val_accuracy", ckpt_path,
+                                 es_patience=cfg.training.transfer_early_stopping_patience,
+                                 rlr_patience=cfg.training.transfer_reduce_lr_patience),
         )
 
         # Phase 2: fine-tune top N layers at small LR
@@ -186,7 +189,9 @@ def main() -> None:
             epochs=head_epochs + ft_epochs,
             initial_epoch=len(h1.history.get("loss", [])),
             class_weight=class_weights,
-            callbacks=_callbacks(cfg, "val_accuracy", ckpt_path),
+            callbacks=_callbacks(cfg, "val_accuracy", ckpt_path,
+                                 es_patience=cfg.training.transfer_early_stopping_patience,
+                                 rlr_patience=cfg.training.transfer_reduce_lr_patience),
         )
         logger.info("Transfer trained in %.1fs", time.time() - t0)
 

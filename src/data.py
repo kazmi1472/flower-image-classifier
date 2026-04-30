@@ -110,12 +110,14 @@ def _build_augmenter(aug_cfg) -> tf.keras.Sequential:
     """Train-only augmentation stack."""
     layers = [
         tf.keras.layers.RandomFlip("horizontal" if aug_cfg.horizontal_flip else "none"),
-        tf.keras.layers.RandomRotation(aug_cfg.rotation_range / 360.0),
-        tf.keras.layers.RandomZoom(aug_cfg.zoom_range),
-        tf.keras.layers.RandomTranslation(aug_cfg.height_shift_range, aug_cfg.width_shift_range),
+        tf.keras.layers.RandomRotation(aug_cfg.rotation_range / 360.0, fill_mode="reflect"),
+        tf.keras.layers.RandomZoom(aug_cfg.zoom_range, fill_mode="reflect"),
+        tf.keras.layers.RandomTranslation(aug_cfg.height_shift_range, aug_cfg.width_shift_range, fill_mode="reflect"),
         tf.keras.layers.RandomBrightness(
-            (aug_cfg.brightness_range[1] - aug_cfg.brightness_range[0]) / 2.0
+            (aug_cfg.brightness_range[1] - aug_cfg.brightness_range[0]) / 2.0,
+            value_range=(0.0, 1.0),
         ),
+        tf.keras.layers.Lambda(lambda t: tf.clip_by_value(t, 0.0, 1.0)),
     ]
     return tf.keras.Sequential(layers, name="augmenter")
 

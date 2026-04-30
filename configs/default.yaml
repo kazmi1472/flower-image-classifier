@@ -17,13 +17,15 @@ training:
   finetune_unfreeze_layers: 30
   early_stopping_patience: 5
   reduce_lr_patience: 3
+  transfer_early_stopping_patience: 4
+  transfer_reduce_lr_patience: 2
   use_class_weights: true
 
 augmentation:
-  rotation_range: 20
-  zoom_range: 0.15
-  width_shift_range: 0.15
-  height_shift_range: 0.15
+  rotation_range: 15
+  zoom_range: 0.10
+  width_shift_range: 0.10
+  height_shift_range: 0.10
   horizontal_flip: true
   brightness_range: [0.85, 1.15]
 
