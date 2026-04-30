@@ -1,0 +1,44 @@
+data:
+  data_dir: data/flowers
+  classes: [daisy, dandelion, rose, sunflower, tulip]
+  image_size: 160
+  channels: 3
+  val_split: 0.15
+  test_split: 0.15
+  seed: 42
+
+training:
+  batch_size: 32
+  epochs_baseline: 25
+  epochs_transfer_head: 10
+  epochs_transfer_finetune: 10
+  learning_rate: 0.001
+  finetune_learning_rate: 0.00001
+  finetune_unfreeze_layers: 30
+  early_stopping_patience: 5
+  reduce_lr_patience: 3
+  use_class_weights: true
+
+augmentation:
+  rotation_range: 20
+  zoom_range: 0.15
+  width_shift_range: 0.15
+  height_shift_range: 0.15
+  horizontal_flip: true
+  brightness_range: [0.85, 1.15]
+
+model:
+  baseline_name: baseline_cnn
+  transfer_backbone: MobileNetV2
+  dropout: 0.4
+  dense_units: 256
+
+paths:
+  models_dir: models
+  reports_dir: reports
+  log_dir: reports/logs
+
+inference:
+  model_path: models/best_model.keras
+  labels_path: models/labels.json
+  top_k: 3
