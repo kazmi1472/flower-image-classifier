@@ -1,0 +1,17 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+data/
+notebooks/
+reports/
+.git/
+.gitignore
+.vscode/
+.idea/
+*.ipynb_checkpoints/
+*.log
+configs/local.yaml

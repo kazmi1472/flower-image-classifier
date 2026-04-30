@@ -4,7 +4,49 @@ Image classifier for the Kaggle [Flower Recognition](https://www.kaggle.com/data
 
 This is my take-home for an AI/ML engineer assessment. It covers EDA, training, evaluation/error analysis and a small inference service.
 
-## Setup
+## Docker
+
+The fastest way to run the inference API — no Python environment needed.
+
+**Prerequisites:** Docker and Docker Compose installed.
+
+**1. Clone the repo**
+```bash
+git clone https://github.com/kazmi1472/flower-image-classifier.git
+cd flower-image-classifier
+```
+
+**2. Build and start**
+```bash
+docker compose up --build
+```
+
+**3. Open the interactive docs**
+```
+http://localhost:8000/docs
+```
+Click **POST /predict → Try it out → Choose File** → pick any image from `samples/` → **Execute**.
+
+**4. Or call the API directly**
+```bash
+curl -X POST http://localhost:8000/predict \
+  -F "file=@samples/flo1.jpg" \
+  -F "top_k=3"
+```
+
+**5. Health check**
+```bash
+curl http://localhost:8000/health
+```
+
+**Stop the container**
+```bash
+docker compose down
+```
+
+> The `models/` directory is mounted as a volume, so you can swap in a retrained model without rebuilding the image — just restart the container.
+
+## Python Setup
 
 ```bash
 python -m venv .venv
@@ -13,6 +55,8 @@ pip install -r requirements.txt
 ```
 
 Drop the dataset under `data/flowers/<class>/*.jpg`. The folders should be `daisy/ dandelion/ rose/ sunflower/ tulip/`.
+
+---
 
 ## Layout
 
